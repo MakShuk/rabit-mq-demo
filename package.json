@@ -1,11 +1,23 @@
 {
   "name": "rabbitmq-demo",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node src/publisher.ts",
+    "build": "tsc",
+    "publisher": "nodemon --exec ts-node src/publisher.ts",
+    "subscriber": "nodemon --exec ts-node src/subscriber.ts"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "amqplib": "^0.10.4"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
 }
