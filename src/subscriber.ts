@@ -1,7 +1,7 @@
 import { connect } from "amqplib";
 import "dotenv/config";
 
-const run = async () => {
+const subscriber = async () => { // подписчик
   try {
     // Устанавливаем соединение с RabbitMQ
     const connection = await connect({
@@ -44,4 +44,5 @@ const run = async () => {
   }
 };
 
-run();
+console.log('subscriber');
+subscriber();
