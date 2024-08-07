@@ -6,7 +6,8 @@
     "start": "ts-node src/publisher.ts",
     "build": "tsc",
     "publisher": "nodemon --exec ts-node src/publisher.ts",
-    "subscriber": "nodemon --exec ts-node src/subscriber.ts"
+    "subscriber": "nodemon --exec ts-node src/subscriber.ts",
+    "test": "nodemon --exec ts-node src/test.ts"
   },
   "author": "",
   "license": "ISC",
