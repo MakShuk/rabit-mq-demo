@@ -1,48 +1,62 @@
 import { connect } from "amqplib";
-import "dotenv/config";
+import * as dotenv from "dotenv";
 
-const subscriber = async () => { // подписчик
+ const customLog = (message: string) =>
+   console.log(`[${new Date().toISOString()}] ${message}`);
+
+async function listenMessages() {
   try {
+    dotenv.config();
+
+    const username = process.env.AMQP_USER;
+    const password = process.env.AMQP_PASSWORD;
+    const queue = process.env.AMQP_QUEUE;
+    const exchange = process.env.AMQP_EXCHANGE;
+    const ROUTING_KEY = "account.register.command";
+
+    if (!username || !password || !queue || !exchange) {
+      throw new Error(
+        "Необходимо указать AMQP_USER, AMQP_PASSWORD, AMQP_QUEUE и AMQP_EXCHANGE в файле .env"
+      );
+    }
+
     // Устанавливаем соединение с RabbitMQ
     const connection = await connect({
-      username: process.env.RABBITMQ_USER,
-      password: process.env.RABBITMQ_PASSWORD,
+      username: process.env.AMQP_USER,
+      password: process.env.AMQP_PASSWORD,
     });
-    // Создаем канал для работы с сообщениями
     const channel = await connection.createChannel();
-    // Объявляем обменник с именем "test" и типом "topic"
-    await channel.assertExchange("test", "topic", { durable: true });
-    // Объявляем очередь с именем "my-cool-queue" и параметром durable: true, чтобы очередь была сохранена при перезапуске RabbitMQ
-    const queue = await channel.assertQueue("my-cool-queue", { durable: true });
-    // Привязываем очередь к обменнику с ключом "my.command"
-    channel.bindQueue(queue.queue, "test", "my.command");
-    // Подписываемся на получение сообщений из очереди
+
+    // Объявляем обмен типа "topic"
+    await channel.assertExchange(exchange, "topic", { durable: true });
+
+    // Объявляем очередь (если её нет) и привязываем её к обменнику с ключом маршрутизации
+    await channel.assertQueue(queue, { durable: true });
+    await channel.bindQueue(queue, exchange, ROUTING_KEY);
+
+    // Настраиваем слушателя для очереди
+    console.log(
+      `Ожидание сообщений в очереди ${queue}. Для выхода нажмите CTRL+C.`
+    );
+
     channel.consume(
-      queue.queue,
-      (message) => {
-        if (!message) {
-          return;
-        }
-        // Выводим содержимое сообщения в консоль
-        console.log(message.content.toString());
-        if (message.properties.replyTo) {
-          // Если у сообщения указан адрес для ответа, отправляем ответное сообщение
-          console.log(message.properties.replyTo);
-          channel.sendToQueue(
-            message.properties.replyTo,
-            Buffer.from("Ответ"),
-            { correlationId: message.properties.correlationId }
-          );
+      queue,
+      (msg) => {
+        if (msg !== null) {
+          const messageContent = msg.content.toString();
+          customLog(`Получено сообщение: ${messageContent}`);
+
+          // Здесь вы можете обрабатывать полученные данные, например, выполнять логику регистрации пользователя.
+
+          // Подтверждаем получение сообщения
+          channel.ack(msg);
         }
       },
-      {
-        noAck: true, // Отключаем подтверждение получения сообщений (acknowledgement)
-      }
+      { noAck: false }
     );
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error("Ошибка:", error);
   }
-};
+}
 
-console.log('subscriber');
-subscriber();
+listenMessages();

@@ -1,9 +1,25 @@
 version: '3.1'
+
 services:
-  rabbitmq:
+  message_broker:
     image: rabbitmq:4.0-rc-management
+    container_name: rabbitmq_service
     ports:
+      # AMQP protocol port
       - "5672:5672"
+      # Management UI port
       - "15672:15672"
+    networks:
+      - message_broker_network
+    restart: unless-stopped
     volumes:
-      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.cocnf
+     - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+volumes:
+  rabbitmq_data:
+    name: rabbitmq_persistent_data
+
+networks:
+  message_broker_network:
+    name: rabbitmq_network
+    driver: bridge
