@@ -37,5 +37,8 @@ async function sendMessage() {
   }, 500);
 }
 
-// Запускаем функцию отправки сообщения
-sendMessage().catch(console.error);
+
+setInterval(() => {
+  // Запускаем функцию отправки сообщения
+  sendMessage().catch(console.error);
+}, 10000);
