@@ -3,3 +3,7 @@
 *.log
 /node_modules
 .env
+/rabbitmq_data
+/rabbitmq_data/*
+rabbitmq_logs
+/rabbitmq_logs/*
